@@ -1,9 +1,7 @@
 -- CC SCRIPTS / HUD - ESX VERSION
 
--- ESX INIT
 local ESX = exports['es_extended']:getSharedObject()
 
--- QBCore COMPAT WRAPPER (da ni treba menjat celotne skripte)
 local QBCore = {}
 QBCore.Functions = {}
 
@@ -12,7 +10,6 @@ function QBCore.Functions.GetPlayerData()
 end
 
 function QBCore.Functions.Notify(msg, msgType)
-    -- msgType lahko ignoriraš ali pa sam mapiraš na svoj notify sistem
     ESX.ShowNotification(msg)
 end
 
@@ -20,7 +17,6 @@ function QBCore.Functions.TriggerCallback(name, cb, ...)
     ESX.TriggerServerCallback(name, cb, ...)
 end
 
--- ORIGINALNE SPREMENLJIVKE
 local PlayerData = QBCore.Functions.GetPlayerData()
 local config = Config
 local UIConfig = UIConfig
@@ -143,16 +139,11 @@ local function HandleSetupResource()
         SendAdminStatus()
     end)
     if Config.AdminOnly then
-        -- Send the client what the saved ui config is (enforced by the server)
         if next(UIConfig) then
             sendUIUpdateMessage(UIConfig)
         end
     end
 end
-
-----------------------------------------------------------------
--- ESX PLAYER EVENTS (ZAMENJAVA QBCORE OnPlayerLoaded/Unload)
-----------------------------------------------------------------
 
 RegisterNetEvent('esx:playerLoaded', function(xPlayer)
     PlayerData = xPlayer
@@ -178,16 +169,11 @@ RegisterNetEvent('esx:setPlayerData', function(key, value)
     PlayerData[key] = value
 end)
 
-----------------------------------------------------------------
--- (POPUSTIMO QB EVENTS, DA NE MOTIJO, LAHKO OSTANEJO ALI SE ZBRIŠEJO)
-----------------------------------------------------------------
 
--- pma-voice radio
 AddEventHandler("pma-voice:radioActive", function(isRadioTalking)
     radioTalking = isRadioTalking
 end)
 
--- Callbacks & Events
 RegisterCommand('menu', function()
     Wait(50)
     if showMenu then return end
@@ -207,7 +193,6 @@ end)
 
 RegisterKeyMapping('menu', Lang:t('info.open_menu'), 'keyboard', Config.OpenMenu)
 
--- Reset hud
 local function restartHud()
     TriggerEvent("hud:client:playResetHudSounds")
     QBCore.Functions.Notify(Lang:t("notify.hud_restart"), "error")
@@ -274,7 +259,6 @@ RegisterNetEvent("hud:client:resetStorage", function()
     end)
 end)
 
--- Notifications
 RegisterNUICallback('openMenuSounds', function(data, cb)
     cb({})
     Wait(50)
@@ -427,7 +411,6 @@ end)
 
 RegisterNetEvent("hud:client:LoadMap", function()
     Wait(50)
-    -- Credit to Dalrae for the solve.
     local defaultAspectRatio = 1920/1080 -- Don't change this.
     local resolutionX, resolutionY = GetActiveScreenResolution()
     local aspectRatio = resolutionX/resolutionY
@@ -637,7 +620,7 @@ RegisterNetEvent('hud:client:ToggleAirHud', function()
     showAltitude = not showAltitude
 end)
 
-RegisterNetEvent('hud:client:UpdateNeeds', function(newHunger, newThirst) -- če želiš, da server pošlje
+RegisterNetEvent('hud:client:UpdateNeeds', function(newHunger, newThirst) 
     hunger = newHunger
     thirst = newThirst
 end)
@@ -676,7 +659,6 @@ RegisterNetEvent('hud:client:UpdateUISettings', function(data)
     sendUIUpdateMessage(data)
 end)
 
--- Buff icons
 RegisterNetEvent('hud:client:BuffEffect', function(data)
     if data.progressColor ~= nil then
         SendNUIMessage({
@@ -872,9 +854,7 @@ local function getFuelLevel(vehicle)
     return lastFuelCheck
 end
 
-----------------------------------------------------------------
--- ESX_STATUS INTEGRACIJA (HUNGER & THIRST)
-----------------------------------------------------------------
+
 CreateThread(function()
     while true do
         if LocalPlayer.state.isLoggedIn then
@@ -907,10 +887,6 @@ CreateThread(function()
     end
 end)
 
-----------------------------------------------------------------
--- HUD UPDATE LOOP
-----------------------------------------------------------------
-
 CreateThread(function()
     local wasInVehicle = false
     while true do        
@@ -931,11 +907,9 @@ CreateThread(function()
                 end
             end
 
-            -- ESX nima metadata isdead/inlaststand -> uporabljamo samo IsEntityDead
             playerDead = IsEntityDead(player)
             parachute = GetPedParachuteState(player)
 
-            -- Stamina / Oxygen
             if not IsEntityInWater(player) then
                 oxygen = 100 - GetPlayerSprintStaminaRemaining(playerId)
             end
@@ -944,7 +918,6 @@ CreateThread(function()
                 oxygen = GetPlayerUnderwaterTimeRemaining(playerId) * 10
             end
 
-            -- Voice setup (pma-voice)
             local talking = NetworkIsPlayerTalking(playerId)
             local voice = 0
             if LocalPlayer.state['proximity'] then
@@ -988,7 +961,6 @@ CreateThread(function()
                 })
             end
 
-            -- Vehicle hud
             if IsPedInAnyHeli(player) or IsPedInAnyPlane(player) then
                 showAltitude = true
                 showSeatbelt = false
@@ -1072,7 +1044,6 @@ function isElectric(vehicle)
     return noBeeps
 end
 
--- Low fuel
 CreateThread(function()
     while true do
         if LocalPlayer.state.isLoggedIn then
@@ -1093,7 +1064,6 @@ CreateThread(function()
     end
 end)
 
--- Money HUD (ESX accounts)
 
 local function RefreshAccounts()
     local pdata = ESX.GetPlayerData()
@@ -1138,7 +1108,6 @@ RegisterNetEvent('hud:client:OnMoneyChange', function(type, amount, isMinus)
     })
 end)
 
--- Stress Gain
 
 CreateThread(function() -- Speeding
     while true do
@@ -1190,7 +1159,6 @@ CreateThread(function() -- Shooting
     end
 end)
 
--- Stress Screen Effects
 
 local function GetBlurIntensity(stresslevel)
     for k, v in pairs(config.Intensity['blur']) do
@@ -1250,7 +1218,6 @@ CreateThread(function()
     end
 end)
 
--- Minimap update
 CreateThread(function()
     while true do
         SetRadarBigmapEnabled(false, false)
