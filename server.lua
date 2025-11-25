@@ -3,10 +3,6 @@ local ESX = exports['es_extended']:getSharedObject()
 
 local ResetStress = false
 
----------------------------------------------------------
--- ESX COMMANDS
----------------------------------------------------------
-
 ESX.RegisterCommand('cash', 'user', function(xPlayer, args, showError)
     local cash = 0
 
@@ -34,10 +30,6 @@ end, false, {help = Lang:t('info.check_bank_balance')})
 ESX.RegisterCommand('dev', 'admin', function(xPlayer, args, showError)
     TriggerClientEvent("qb-admin:client:ToggleDevmode", xPlayer.source)
 end, true, {help = Lang:t('info.toggle_dev_mode')})
-
----------------------------------------------------------
--- STRESS SYSTEM (ESX VERSION)
----------------------------------------------------------
 
 local function isPolice(xPlayer)
     return xPlayer.job and (
@@ -82,16 +74,11 @@ RegisterNetEvent('hud:server:RelieveStress', function(amount)
     TriggerClientEvent('esx:showNotification', src, Lang:t("notify.stress_removed"))
 end)
 
----------------------------------------------------------
--- SAVE UI CONFIG
----------------------------------------------------------
-
 RegisterNetEvent('hud:server:saveUIData', function(data)
     local src = source
     local xPlayer = ESX.GetPlayerFromId(src)
     if not xPlayer then return end
 
-    -- PERMISSION CHECK
     if xPlayer.getGroup() ~= 'admin' and not IsPlayerAceAllowed(src, 'command') then
         print(('[HUD] Player %s attempted to save UI config without permission'):format(src))
         return
@@ -111,9 +98,6 @@ RegisterNetEvent('hud:server:saveUIData', function(data)
 
     file:write("UIConfig = {}\n")
 
-    -------------------------------------------------
-    -- ICONS
-    -------------------------------------------------
     file:write("\nUIConfig.icons = {}\n")
 
     local iconKeys = {}
@@ -143,9 +127,6 @@ RegisterNetEvent('hud:server:saveUIData', function(data)
         file:write("\n}\n")
     end
 
-    -------------------------------------------------
-    -- LAYOUT
-    -------------------------------------------------
     file:write("\nUIConfig.layout = {")
     for k, v in pairs(data.layout) do
         if type(v) == "string" then
@@ -207,9 +188,6 @@ RegisterNetEvent('hud:server:saveUIData', function(data)
     TriggerClientEvent('hud:client:UpdateUISettings', -1, uiConfigData)
 end)
 
----------------------------------------------------------
--- ESX CALLBACKS
----------------------------------------------------------
 
 ESX.RegisterServerCallback('hud:server:getMenu', function(source, cb)
     cb(Config.Menu)
